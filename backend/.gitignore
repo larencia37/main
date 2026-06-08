@@ -1,0 +1,17 @@
+# Backend .gitignore
+node_modules/
+npm-debug.log*
+.env
+config.env
+logs/
+*.log
+coverage/
+.nyc_output/
+.cache/
+dist/
+build/
+temp/
+*.pid
+*.seed
+.DS_Store
+Thumbs.db
