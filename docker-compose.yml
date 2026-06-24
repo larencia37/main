@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: venehealth
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - '6379:6379'
+
+  minio:
+    image: minio/minio:latest
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+      - redis
+      - minio
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgres@db:5432/venehealth
+      SECRET_KEY: changeme1234567890
+      ACCESS_TOKEN_EXPIRE_MINUTES: '60'
+      MINIO_ENDPOINT: http://minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET: documents
+      MINIO_SECURE: 'false'
+    ports:
+      - '8000:8000'
+    volumes:
+      - ./app:/app
+
+volumes:
+  db_data:
+  minio_data:
